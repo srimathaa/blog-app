@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getPostBySlug, updatePost, deletePost } from '../api/posts';
+import { getPostById, updatePost, deletePost } from '../api/posts';
 import { useAuth } from '../hooks/useAuth';
 
 const EditPost = () => {
@@ -24,14 +24,8 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        // Note: we fetch all posts and find by id here isn't ideal —
-        // instead we search by hitting a slug lookup won't work with :id.
-        // Simplify by using the id directly against the backend id-based endpoints.
-        const res = await fetch(`http://localhost:5000/api/posts/id/${id}`, {
-          credentials: 'include',
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Post not found');
+        const res = await getPostById(id);
+        const data = res.data;
 
         setForm({
           title: data.title,
@@ -42,7 +36,7 @@ const EditPost = () => {
         });
         setPostAuthorId(data.author?._id || data.author);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || 'Post not found');
       } finally {
         setLoading(false);
       }
